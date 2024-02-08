@@ -47,23 +47,68 @@ char westTurn(int dx, int dy, Maze* maze) {
     return ' ';
 }
 
-void turnToMinDist(Maze* maze) {
+// Returns true if there is a direction to turn to, false if there is not.
+bool turnToMinDist(Maze* maze, bool search) {
     Coord cur_pos = maze->mouse_pos;
     Coord next_pos = maze->mouse_pos;
-    int minDist = maze->distances[cur_pos.y][cur_pos.x];
+    int minDist = maze->distances[next_pos.y][next_pos.x];
+    int maxDist = maze->distances[next_pos.y][next_pos.x];
 
     //MOVEMENT
     //get neighbor cells
     //check if blocked and then check distance values 
     CellList* surround = getNeighborCells(maze, cur_pos);
+    bool cur_exp = true;
     for(int i = 0 ; i < surround->size; i++) {
         Cell cur = surround->cells[i];
+        int curDist = maze->distances[cur.pos.y][cur.pos.x];
+        bool curExp = maze->explored[cur.pos.y][cur.pos.x];
+        std::cerr << maze->mouse_pos.x << ", " << maze->mouse_pos.y << std::endl;
+        if (maze->mouse_pos.x == 0 && maze->mouse_pos.y == 0) {
+            std::cerr << cur.pos.x << ", " << cur.pos.y << ": " << curDist << std::endl;
+        }
+        // std::cerr << cur.pos.x << ", " << cur.pos.y << ": " << maze->distances[cur.pos.y][cur.pos.x] << std::endl;
+        // std::cerr << "cur exp: " << cur_exp << " maze explored: " << maze->explored[cur.pos.y][cur.pos.x] << std::endl;
         if(cur.blocked == false) {
-            if(maze->distances[cur.pos.y][cur.pos.x] < minDist) {
-                minDist = maze->distances[cur.pos.y][cur.pos.x];
-                next_pos = cur.pos;
+            if(search) {
+                if(!curExp) {
+                    if(curDist > maxDist) {
+                        next_pos = cur.pos;
+                        cur_exp = curExp;
+                        maxDist = maze->distances[next_pos.y][next_pos.x];
+                    } else {
+                        if(curDist < minDist) {
+                            next_pos = cur.pos;
+                            cur_exp = curExp;
+                            minDist = maze->distances[next_pos.y][next_pos.x];
+                        }
+                    }
+                } else {
+                    if(curDist < minDist && cur_exp) {
+                        next_pos = cur.pos;
+                        cur_exp = curExp;
+                        minDist = maze->distances[next_pos.y][next_pos.x];
+                    }
+                }
+                // if(maze->distances[cur.pos.y][cur.pos.x] < minDist) {
+                //     next_pos = cur.pos;
+                //     cur_exp = curExp;
+                //     minDist = maze->distances[next_pos.y][next_pos.x];
+                // } else if(maze->distances[cur.pos.y][cur.pos.x] == minDist) {
+                //     if (!curExp && cur_exp) {
+                //         next_pos = cur.pos;
+                //         cur_exp = curExp;
+                //     }
+                // }
+            } else {
+                if(curDist < minDist) {
+                    next_pos = cur.pos;
+                    cur_exp = curExp;
+                    minDist = maze->distances[next_pos.y][next_pos.x];
+                }
             }
         }
+        std::cerr << "next pos:" << next_pos.x << ", " << next_pos.y << std::endl;
     }
     
     int dx = next_pos.x - maze->mouse_pos.x;
@@ -80,7 +125,7 @@ void turnToMinDist(Maze* maze) {
         next_direction = westTurn(dx, dy, maze);
     }
 
-    std::cerr << "got here " << next_direction << std::endl;
+    // std::cerr << "got here " << next_direction << std::endl;
 
     if(next_direction  == 'r') {
         API::turnRight();
@@ -93,9 +138,14 @@ void turnToMinDist(Maze* maze) {
     } else if (next_direction == 'u') {
         API::turnLeft();
         maze->mouse_dir = (Direction)((maze->mouse_dir + 3) % 4);
+        // maze->commands += 'L';
         API::turnLeft();
         maze->mouse_dir = (Direction)((maze->mouse_dir + 3) % 4);
-        maze->commands += 'L';
-        maze->commands += 'L';
+        if (maze->commands.size() != 0){
+            maze->commands += 'U';
+        }
+    } else {
+        return false;
     }
+    return true;
 }

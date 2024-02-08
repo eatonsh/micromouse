@@ -15,3 +15,5 @@ void initQueue(Queue *q);
 void enqueue(Queue *q, Coord coord);
 Coord dequeue(Queue *q);
 bool isQEmpty(Queue q);
+
+void printQueue(Queue q);

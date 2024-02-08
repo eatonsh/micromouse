@@ -48,6 +48,7 @@ struct Maze {
     int distances[MAZE_SIZE][MAZE_SIZE];
     int cellWalls[MAZE_SIZE][MAZE_SIZE]; //list of all walls in maze
         // how maze remembers discovered walls
+    bool explored[MAZE_SIZE][MAZE_SIZE];
 
     Coord* goalPos;
 
@@ -64,4 +65,4 @@ bool onGoal(Maze maze);
 bool isCoordSame(Coord c1, Coord c2);
 
 CellList* getNeighborCells(Maze* maze, Coord c);
-void floodFill(Maze* maze);
+void floodFill(Maze* maze, bool to_start);

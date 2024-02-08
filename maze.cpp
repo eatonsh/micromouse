@@ -33,8 +33,8 @@ bool isCoordSame(Coord c1, Coord c2) {
 
 bool onGoal(Maze maze) {
     for (int i = 0; i < 4; i++) {
-        std::cerr << maze.mouse_pos.x << maze.mouse_pos.y << std::endl;
-        std::cerr << maze.goalPos[i].x << maze.goalPos[i].y << std::endl;
+        // std::cerr << maze.mouse_pos.x << maze.mouse_pos.y << std::endl;
+        // std::cerr << maze.goalPos[i].x << maze.goalPos[i].y << std::endl;
         if (isCoordSame(maze.mouse_pos, maze.goalPos[i])) {
             return true;
         }
@@ -126,7 +126,7 @@ CellList* getNeighborCells(Maze* maze, Coord c) { //to be called in a while loop
 
     // Directions: W E S N[]
     int dirX[] = {-1, 1, 0, 0}; //possible directions away from center WEST, EAST
-    int dirY[] = {0, 0, -1, 1}; 
+    int dirY[] = {0, 0, -1, 1}; //SOUTH, NORTH
     int count = 0;
     int newX[4];
     int newY[4];
@@ -193,18 +193,25 @@ CellList* getNeighborCells(Maze* maze, Coord c) { //to be called in a while loop
     return cellList;
 };
 
-void floodFill(Maze* maze) {
+void floodFill(Maze* maze, bool to_start) {
     Queue q; //INIT QUEUE
-    //std::cerr << "Getting here" << std::endl;
-     //intialize maze to max
+
+    //intialize maze distances to max
     for(int x = 0; x < MAZE_SIZE; x++) {
         for(int y = 0; y < MAZE_SIZE; y++) {
             maze->distances[y][x] = MAX_CELL;
         }
     }
 
+    int b; 
+    if (to_start == true) {
+        b = 1;
+    } else {
+        b = 4;
+    }
+
     //set goalPos to 0
-    for(int i = 0; i < 4; i++) {
+    for(int i = 0; i < b; i++) {
         Coord g = maze->goalPos[i];
         maze->distances[g.y][g.x] = 0;
     }
@@ -213,7 +220,7 @@ void floodFill(Maze* maze) {
     initQueue(&q);
 
     //add goalPos to queue
-    for(int i = 0 ; i < 4; i++) {
+    for(int i = 0 ; i < b; i++) {
         //std::cerr << maze->goalPos[i].x << ", " << maze->goalPos[i].y << std::endl;
         enqueue(&q, maze->goalPos[i]);
         //std::cerr << q.coords[i].x << ", " << q.coords[i].y << std::endl;
@@ -223,38 +230,35 @@ void floodFill(Maze* maze) {
     while(isQEmpty(q) == 0) {
         //set current position as head in queue
         Coord cur_pos = dequeue(&q);
-        //std::cerr << cur_pos.x << "," << cur_pos.y << std::endl;
-        //std::cerr << q.head << std::endl;
+
         //set the new distances as the current distance++
         int newDist = maze->distances[cur_pos.y][cur_pos.x] + 1;
+
         //list of cells from getneightbors of current position
         CellList* neighbors = getNeighborCells(maze, cur_pos);
-        //for all cell in list
-        for(int i = 0; i < neighbors->size; i++) {
-            //if the cell is not blocked
-            Cell cur = neighbors->cells[i];
-            if (cur.blocked) {
-                //std::cerr << "CUR= " << cur_pos.y << ", " << cur_pos.x << " NEIGHBOR= " << cur.pos.y << ", " << cur.pos.x << std::endl;
-            }
+
+        for(int i = 0; i < neighbors->size; i++) { //for all cell in list
+            // Useful logs: 
+            //std::cerr << "CUR= " << cur_pos.y << ", " << cur_pos.x << " NEIGHBOR= " << cur.pos.y << ", " << cur.pos.x << " BLCOKED= " << cur.blocked << std::endl;
             //std::cerr << cur.pos.x << "," << cur.pos.y << std::endl;
             //std::cerr << "NIEGHBORS SIZE" << neighbors->size << std::endl;
-            if(cur.blocked == false) {
-                //if distance in neighbor cell greater than new distance
-                if(maze->distances[cur.pos.y][cur.pos.x] > newDist) {
-                //replace distance
-                    maze->distances[cur.pos.y][cur.pos.x] = newDist;
-                //add the cell to the end of queue
-                    enqueue(&q, cur.pos); //enqueue increments tail
+
+            // Operate on the current cell's neighbors
+            Cell cur = neighbors->cells[i];
+            if(cur.blocked == false) { //if the neighbor is not blocked
+                if(maze->distances[cur.pos.y][cur.pos.x] > newDist) { //if distance in neighbor cell greater than new distanc
+                    maze->distances[cur.pos.y][cur.pos.x] = newDist; //replace distance
+                    enqueue(&q, cur.pos); //add the cell to the end of queue, enqueue() increments tail
                 }
             }
         }
-        //std::cerr << isQEmpty(q) << std::endl;
     }
-    for (int i = 0; i < MAZE_SIZE; i++){
+    
+    // Prints entire distances array
+    /*for (int i = 0; i < MAZE_SIZE; i++){
         for (int j =0; j < MAZE_SIZE; j++) {
             //std::cerr << "Maze Distance at " << i << "," << j << " = " << maze->distances[i][j] << std::endl;
             //log("getting here");
         }
-    }
-    
+    }*/
 }

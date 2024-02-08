@@ -22,3 +22,11 @@ Coord dequeue(Queue *q) {
 bool isQEmpty(Queue q) {
     return q.head == q.tail;
 }
+
+void printQueue(Queue q) { 
+    std::cerr << "[" << std::endl;
+    for (int i = 0; i < q.tail; i++) {
+        std::cerr << "(" << q.coords[i].y  << ", " << q.coords[i].x << "), ";
+    }
+    std::cerr << "]" << std::endl;
+}
