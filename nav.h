@@ -6,4 +6,4 @@
 #include <cstdlib>
 #include "maze.h"
 
-bool turnToMinDist(Maze* maze, bool search);
+bool turnToMinDist(Maze* maze, bool search, bool moving);

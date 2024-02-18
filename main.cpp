@@ -14,15 +14,17 @@ void log(const std::string& text) {
     std::cerr << text << std::endl;
 }
 
-void run(bool to_start) {
+void run(bool to_start, bool moving) {
     // Determine current state of maze
     scanWalls(&maze);
     floodFill(&maze, to_start);
     updateSimulator(maze);   
 
     // Turn and movement
-    bool turned = turnToMinDist(&maze, true);
-    API::moveForward();
+    bool turned = turnToMinDist(&maze, true, moving);
+    if (moving) {
+        API::moveForward();
+    }
     if(turned) {
         log("turned");
     } else {
@@ -60,7 +62,7 @@ void search_run() {
     }
 
     while (!onGoal(maze)) { // on the way from the start to the goalPos
-        run(to_start);
+        run(to_start, true);
     }
 
     // reset for the run back to the start
@@ -69,8 +71,40 @@ void search_run() {
     to_start = true;
 
     while (!isCoordSame(maze.mouse_pos, (Coord){0,0})) { // on the way back from the goalPos to the start
-        run(to_start);
+        run(to_start, true);
     }
+}
+
+void sim_run() {
+    maze.mouse_pos.x = 0;
+    maze.mouse_pos.y = 0;
+    // maze.mouse_dir = NORTH;
+    maze.commands = "";
+
+    initCenterGoalPos(&maze);
+    floodFill(&maze, false);
+
+    updateSimulator(maze);
+    
+    while (!onGoal(maze)) {
+        bool turned = turnToMinDist(&maze, false, false);
+        if(turned) {
+            log("turned");
+        } else {
+            maze.commands += 'F';
+        }
+
+        // Update mouse position
+        updateMousePos(&maze.mouse_pos, maze.mouse_dir);
+
+        log(" "); // newline
+    }
+    maze.commands += "S";
+    // Command handling
+    std::cerr << "Commands:" << maze.commands << std::endl;
+    char* flruString = flruStringToCommands(maze.commands);
+    makeDiagonalPath(flruString);
+    listCommands();
 }
 
 void speed_run() {
@@ -86,34 +120,30 @@ void speed_run() {
     updateSimulator(maze);
     
     while (!onGoal(maze)) {
-        bool turned = turnToMinDist(&maze, false);
+        bool turned = turnToMinDist(&maze, false, true);
         API::moveForward();
-        if(turned) {
-            log("turned");
-        } else {
-            maze.commands += 'F';
-        }
 
         // Update mouse position
         updateMousePos(&maze.mouse_pos, maze.mouse_dir);
-
-        // Command handling
-        std::cerr << "Commands:" << maze.commands << std::endl;
-        char* flruString = flruStringToCommands(maze.commands);
-        makeDiagonalPath(flruString);
-        listCommands();
 
         log(" "); // newline
     }
 }
 
 int main(int argc, char* argv[]) {
-    search_run();
-    API::turnLeft();
-    maze.mouse_dir = (Direction)((maze.mouse_dir + 3) % 4);
-    // maze->commands += 'L';
-    API::turnLeft();
-    maze.mouse_dir = (Direction)((maze.mouse_dir + 3) % 4);
-    log("finished");
-    speed_run();
+    // search_run();
+    // API::turnLeft();
+    // maze.mouse_dir = (Direction)((maze.mouse_dir + 3) % 4);
+    // // maze->commands += 'L';
+    // API::turnLeft();
+    // maze.mouse_dir = (Direction)((maze.mouse_dir + 3) % 4);
+    // log("finished");
+    // sim_run();
+    // //speed_run();
+
+    // API::moveForward();
+    // API::moveForwardHalf();
+    //API::turnRight45();
+    API::moveForwardHalf();
+
 }
