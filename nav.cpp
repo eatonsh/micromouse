@@ -48,7 +48,7 @@ char westTurn(int dx, int dy, Maze* maze) {
 }
 
 // Returns true if there is a direction to turn to, false if there is not.
-bool turnToMinDist(Maze* maze, bool search, bool moving) {
+bool turnToMinDist(Maze* maze, bool search, bool moving, bool to_start) {
     Coord cur_pos = maze->mouse_pos;
     Coord next_pos = maze->mouse_pos;
     int minDist = maze->distances[next_pos.y][next_pos.x];
@@ -73,25 +73,41 @@ bool turnToMinDist(Maze* maze, bool search, bool moving) {
         // std::cerr << "cur exp: " << cur_exp << " maze explored: " << maze->explored[cur.pos.y][cur.pos.x] << std::endl;
         if(cur.blocked == false) {
             if(search) {
-                if(!curExp) {
-                    if(curDist >= maxDist) {
-                        next_pos = cur.pos;
-                        cur_exp = curExp;
-                        maxDist = maze->distances[next_pos.y][next_pos.x];
-                        max_bro = true;
-                    } else if (max_bro == false) {
-                        next_pos = cur.pos;
-                        cur_exp = curExp;
-                        minDist = maze->distances[next_pos.y][next_pos.x];
-                    } 
+                if(!to_start) {
+                    if(!curExp) {
+                        if(curDist >= maxDist) {
+                            next_pos = cur.pos;
+                            cur_exp = curExp;
+                            maxDist = maze->distances[next_pos.y][next_pos.x];
+                            max_bro = true;
+                        } else if (max_bro == false) {
+                            next_pos = cur.pos;
+                            cur_exp = curExp;
+                            minDist = maze->distances[next_pos.y][next_pos.x];
+                        } 
+                    } else {
+                        if(curDist < minDist && cur_exp) {
+                            next_pos = cur.pos;
+                            cur_exp = curExp;
+                            minDist = maze->distances[next_pos.y][next_pos.x];
+                        }
+                    }
                 } else {
-                    if(curDist < minDist && cur_exp) {
-                        next_pos = cur.pos;
-                        cur_exp = curExp;
-                        minDist = maze->distances[next_pos.y][next_pos.x];
+                    if(!curExp) {
+                        if(curDist < minDist) {
+                            next_pos = cur.pos;
+                            cur_exp = curExp;
+                            minDist = maze->distances[next_pos.y][next_pos.x];
+                        } 
+                    } else {
+                        if(curDist < minDist && cur_exp) {
+                            next_pos = cur.pos;
+                            cur_exp = curExp;
+                            minDist = maze->distances[next_pos.y][next_pos.x];
+                        }
                     }
                 }
-                // if(maze->distances[cur.pos.y][cur.pos.x] < minDist) {
+                // if(maze->distances[cur.pos.y][cur.pos.x] < minDist) {}
                 //     next_pos = cur.pos;
                 //     cur_exp = curExp;
                 //     minDist = maze->distances[next_pos.y][next_pos.x];
@@ -114,6 +130,7 @@ bool turnToMinDist(Maze* maze, bool search, bool moving) {
     
     int dx = next_pos.x - maze->mouse_pos.x;
     int dy = next_pos.y - maze->mouse_pos.y;
+    
     char next_direction;
 
     if(maze->mouse_dir == NORTH) {
@@ -125,6 +142,8 @@ bool turnToMinDist(Maze* maze, bool search, bool moving) {
     } else if(maze->mouse_dir == WEST){
         next_direction = westTurn(dx, dy, maze);
     }
+
+        std::cerr << maze->mouse_dir << "SDFSJDF" << " nmext: " << next_direction <<  std::endl;
 
     // std::cerr << "got here " << next_direction << std::endl;
 

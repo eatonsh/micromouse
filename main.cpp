@@ -21,7 +21,7 @@ void run(bool to_start, bool moving) {
     updateSimulator(maze);   
 
     // Turn and movement
-    bool turned = turnToMinDist(&maze, true, moving);
+    bool turned = turnToMinDist(&maze, true, moving, to_start);
     if (moving) {
         API::moveForward();
     }
@@ -87,7 +87,7 @@ void sim_run() {
     updateSimulator(maze);
     
     while (!onGoal(maze)) {
-        bool turned = turnToMinDist(&maze, false, false);
+        bool turned = turnToMinDist(&maze, false, false, false);
         if(turned) {
             log("turned");
         } else {
@@ -111,7 +111,7 @@ void speed_run() {
     // initialize
     maze.mouse_pos.x = 0;
     maze.mouse_pos.y = 0;
-    // maze.mouse_dir = NORTH;
+    maze.mouse_dir = NORTH;
     maze.commands = "";
 
     initCenterGoalPos(&maze);
@@ -120,7 +120,8 @@ void speed_run() {
     updateSimulator(maze);
     
     while (!onGoal(maze)) {
-        bool turned = turnToMinDist(&maze, false, true);
+        bool turned = turnToMinDist(&maze, false, true, false);
+        std::cerr << turned << " TUERNEND " << std::endl;
         API::moveForward();
 
         // Update mouse position
@@ -131,19 +132,18 @@ void speed_run() {
 }
 
 int main(int argc, char* argv[]) {
-    // search_run();
-    // API::turnLeft();
-    // maze.mouse_dir = (Direction)((maze.mouse_dir + 3) % 4);
-    // // maze->commands += 'L';
-    // API::turnLeft();
-    // maze.mouse_dir = (Direction)((maze.mouse_dir + 3) % 4);
-    // log("finished");
-    // sim_run();
-    // //speed_run();
+    search_run();
+    API::turnLeft();
+    maze.mouse_dir = (Direction)((maze.mouse_dir + 3) % 4);
+    // maze->commands += 'L';
+    API::turnLeft();
+    maze.mouse_dir = (Direction)((maze.mouse_dir + 3) % 4);
+    log("finished");
+    sim_run();
+    speed_run();
 
     // API::moveForward();
     // API::moveForwardHalf();
     //API::turnRight45();
-    API::moveForwardHalf();
-
+    //API::moveForwardHalf();
 }
